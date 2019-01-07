@@ -1,0 +1,141 @@
+class CreatExcel(object):
+    #生成表格
+    def __init__(self,cpu_data,mem_data):
+        self.cpu_data = cpu_data
+        self.mem_data = mem_data
+
+    def get_excel(self):
+        w = Workbook()   #创建一个工作薄
+        cpu = w.add_sheet('cpu_repeat_on_off')    #创建cpu工作表
+        mem = w.add_sheet('mem_full_opration')    #创建内存工作表
+        format_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = 'f:/huawei/performance'
+        excel_type = '.xls'
+        fname = filename + format_time + excel_type
+        n = len(cpu_data)
+        m = len(mem_data)
+        for j in range(1):   #控制列并生成cpu的sheet页
+            i = 0
+            cpu.write(i,j,'cpu')
+            for i in range(1,n+1):   #控制行
+                cpu.write(i,j,cpu_data[i-1])
+        for j in range(1):    #控制列并生成memory的sheet页
+            i = 0
+            mem.write(i,j,'memory')
+            for i in range(1,m+1):
+                mem.write(i,j,mem_data[i-1])
+
+        w.save(fname)
+
+class CreatLineChart(object):
+    '''
+    为cpu与内存数值创建折线图
+    '''
+    def __init__(self,cpu_data_decimal,mem_data):
+        self.cpu_data = cpu_data_decimal
+        self.mem_data = map(lambda x: int(x), mem_data)
+
+    def cpu_line_chart(self):
+        time = range(1,len(self.cpu_data)+1)   #定义横坐标
+        print time
+        rate = self.cpu_data          #定义纵坐标
+        print(rate)
+        pyplot.plot(time,rate)      #生成图表
+        pyplot.xlabel('time')    #执行次数为横坐标
+        pyplot.ylabel('usage_rate')    #得到的数值为纵坐标
+        pyplot.title('the cpu usage rate')   #标题为cpu使用率
+#        pyplot.fill_between(time,rate,0,color = 'green')   #设置填充选项
+        pyplot.grid(True)
+        format_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = 'f:/huawei/cpu'
+        chart_type = '.png'
+        fname = filename + format_time + chart_type
+        # pyplot.show()
+        pyplot.savefig(fname)    #保存图表
+        pyplot.close()
+
+    def mem_line_chart(self):
+        time = range(1,len(self.mem_data)+1)  # 定义横坐标
+        print time
+        mem = self.mem_data  # 定义纵坐标
+        print(mem)
+        pyplot.plot(time, mem)  # 生成图表
+        pyplot.xlabel('time')  # 执行次数为横坐标标签
+        pyplot.ylabel('memory(kb)')  # 得到的数值为纵坐标标签
+        pyplot.title('the memory change chart')  # 标题为cpu使用率
+#        pyplot.fill_between(time, mem, 0, color='blue')  # 设置填充选项
+        pyplot.grid(True)
+        format_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = 'f:/huawei/mem'
+        chart_type = '.png'
+        fname = filename + format_time + chart_type
+#        pyplot.show()
+        pyplot.savefig(fname)  #保存图表
+        pyplot.close()
+
+
+class DataProcessing(object):
+    '''
+    处理读取的数据
+    '''
+    def __init__(self,cpu_data,mem_data):
+        #初始化
+        self.cpu_data = cpu_data
+        self.mem_data = mem_data
+
+    def cpu_average(self):
+        #计算cpu的均值
+        avg = 0
+        n = len(self.cpu_data)
+        cpu_data_change = map(lambda x: float(x[:-1]) / 100, self.cpu_data)
+        for num in cpu_data_change:
+            avg += num / n
+        return "%.2f%%" % (avg * 100)
+
+    def mem_average(self):
+        #计算mem均值
+        avg = 0
+        n = len(self.mem_data)
+        mem_data_change = map(lambda x: int(x), self.mem_data)
+        for num in mem_data_change:
+            avg += num /n
+        return avg
+
+
+class Swipe(object):
+    '''
+    上下左右滑动
+    '''
+    def __init__(self,device):
+        self.device = device
+        self.width = int(self.device.get_screen_normal_size()[0])
+        self.heigth = int(self.device.get_screen_normal_size()[-1])
+
+    def left_swipe(self,t):
+        x1 = int(self.width * 0.9)
+        y1 = int(self.heigth * 0.8)
+        x2 = int(self.width * 0.1)
+        self.device.shell('input swipe %d %d %d %d %d' % (x1,y1,x2,y1,t))
+
+    def right_swipe(self,t):
+        x1 = int(self.width * 0.25)
+        y1 = int(self.heigth * 0.8)
+        x2 = int(self.width * 0.75)
+        self.device.shell('input swipe %d %d %d %d %d' % (x1, y1, x2, y1, t))
+
+    def up_swipe(self,t):
+        x1 = int(self.width * 0.5)
+        y1 = int(self.heigth * 0.8)
+        y2 = int(self.width * 0.4)
+        self.device.shell('input swipe %d %d %d %d %d' % (x1, y1, x1, y2, t))
+
+    def down_swipe(self,t):
+        x1 = int(self.width * 0.25)
+        y1 = int(self.heigth * 0.25)
+        y2 = int(self.width * 0.75)
+        self.device.shell('input swipe %d %d %d %d %d' % (x1, y1, x1, y2, t))
+
+    def click(self):
+        x = int(self.width * 0.3)
+        y = int(self.heigth * 0.25)
+        self.device.shell('input tap %d %d' % (x,y))
